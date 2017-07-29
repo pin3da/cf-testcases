@@ -86,6 +86,10 @@ func downloadTestCases(url string, problemId string) {
 }
 
 func main() {
+	if len(os.Args) < 2 {
+		fmt.Printf("Usage %s contest_id\n", os.Args[0])
+		os.Exit(0)
+	}
 	contestNumber := os.Args[1]
 	cfPrefix := "/contest/" + contestNumber
 	resp, err := http.Get("http://codeforces.com" + cfPrefix)
