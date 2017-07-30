@@ -49,7 +49,7 @@ func writeToFile(data []string, filename string) {
 	f.Close()
 }
 
-func downloadTestCases(url string, problemId string) {
+func downloadTestCases(c chan string, url string, problemId string) {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
@@ -60,8 +60,8 @@ func downloadTestCases(url string, problemId string) {
 
 	tree, _ := html.Parse(b)
 
-	idIn := 0
-	idOut := 0
+	idIn := 1
+	idOut := 1
 
 	var traverse func(*html.Node)
 	traverse = func(n *html.Node) {
@@ -83,6 +83,7 @@ func downloadTestCases(url string, problemId string) {
 		}
 	}
 	traverse(tree)
+	c <- "problem " + problemId + " downloaded"
 }
 
 func main() {
@@ -99,6 +100,9 @@ func main() {
 		return
 	}
 
+	seen := make(map[string]bool)
+	c := make(chan string)
+	total := 0
 	b := resp.Body
 	defer b.Close() // close Body when the function returns
 
@@ -106,20 +110,31 @@ func main() {
 	for {
 		tt := z.Next()
 		if tt == html.ErrorToken {
-			return
+			break
 		}
 		if tt == html.StartTagToken {
 			t := z.Token()
-			if t.Data == "a" {
-				problemUrl := getAtt(t, "href")
-				if strings.HasPrefix(problemUrl, cfPrefix+"/problem") {
-					nextUrl := "http://codeforces.com" + problemUrl
-					a := strings.Split(nextUrl, "/")
-					if len(a) > 6 {
-						downloadTestCases(nextUrl, a[6])
-					}
+			if t.Data != "a" {
+				continue
+			}
+			problemUrl := getAtt(t, "href")
+			if strings.HasPrefix(problemUrl, cfPrefix+"/problem") {
+				nextUrl := "http://codeforces.com" + problemUrl
+				a := strings.Split(nextUrl, "/")
+				if len(a) != 7 {
+					continue
+				}
+				letter := strings.ToLower(a[6])
+				if !seen[letter] {
+					seen[letter] = true
+					go downloadTestCases(c, nextUrl, letter)
+					total = total + 1
 				}
 			}
 		}
+	}
+	for total > 0 {
+		fmt.Println(<-c)
+		total--
 	}
 }

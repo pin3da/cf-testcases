@@ -2,8 +2,6 @@
 
 Automatically fetch sample test cases from codeforces.
 
-This code is ugly and slow, please don't use it.
-
 ## install
 
 ```
