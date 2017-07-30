@@ -13,7 +13,7 @@ go install github.com/pin3da/cf-testcases
 ## usage
 
 ```
-cf-testcase contest_id
+cf-testcase contest_id [problem_letter]
 ```
 
 Example:
@@ -23,6 +23,12 @@ Note that 61 is the number in the URL of the contest.
 
 ```
 cf-testcase 61
+```
+
+Download the cases for the problem D
+
+```
+cf-testcase 61 d
 ```
 
 ----

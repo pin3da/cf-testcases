@@ -91,6 +91,14 @@ func main() {
 		fmt.Printf("Usage %s contest_id\n", os.Args[0])
 		os.Exit(0)
 	}
+	c := make(chan string)
+	if len(os.Args) == 3 {
+		l := strings.ToLower(os.Args[2])
+		url := "http://codeforces.com/contest/" + os.Args[1] + "/problem/" + l
+		go downloadTestCases(c, url, l)
+		fmt.Println(<-c)
+		os.Exit(0)
+	}
 	contestNumber := os.Args[1]
 	cfPrefix := "/contest/" + contestNumber
 	resp, err := http.Get("http://codeforces.com" + cfPrefix)
@@ -101,7 +109,6 @@ func main() {
 	}
 
 	seen := make(map[string]bool)
-	c := make(chan string)
 	total := 0
 	b := resp.Body
 	defer b.Close() // close Body when the function returns
